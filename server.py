@@ -99,18 +99,6 @@ def logged_in():
         dashboard = 'https://elec49x.netlify.app/dashboard/app'
         return redirect(dashboard)
 
-def default_json_serializer(obj):
-    """JSON serializer for objects not serializable by default json code"""
-    if isinstance(obj, datetime):
-        serial = obj.isoformat()
-        return serial
-    elif isinstance(obj, bytes):
-        return str(obj, 'utf-8')
-    elif isinstance(obj, set):
-        return list(obj)
-    else:
-        return str(obj)
-
 @app.route("/user")
 def get_user():
     find_by_name = { 
