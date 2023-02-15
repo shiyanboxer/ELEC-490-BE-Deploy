@@ -4,7 +4,8 @@ from dotenv import load_dotenv
 
 load_dotenv()
 
-MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
+# MONGO_PASSWORD = os.getenv('MONGO_PASSWORD')
+MONGO_PASSWORD='elec49x'
 
 def connect_db():
     try:
