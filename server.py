@@ -27,7 +27,7 @@ import bson.json_util
 import connection as connection
 
 app = Flask(__name__)
-cors = CORS(app) 
+cors = CORS(app)
 
 load_dotenv()
 
@@ -83,7 +83,7 @@ def logged_in():
         strava_athlete = client.get_athlete()
         session['first_name'] = strava_athlete.firstname
         session['last_name'] = strava_athlete.lastname
-        
+
         # If token expires
         if time.time() > expires_at:
             refresh_response = client.refresh_access_token(
@@ -95,36 +95,54 @@ def logged_in():
             expires_at = refresh_response['expires_at']
 
         # return render_template('login_results.html', athlete=strava_athlete, access_token=access_token)
-        dashboard = 'http://localhost:3000/dashboard/app'
-        # dashboard = 'https://elec49x.netlify.app/dashboard/app'
+        # dashboard = 'http://localhost:3000/dashboard/app'
+        dashboard = 'https://elec49x.netlify.app/dashboard/app'
         return redirect(dashboard)
+
+# @app.route("/user")
+# def get_user():
+#     find_by_name = {
+#         "first_name": session.get('first_name', 'Fake'),
+#         "last_name": session.get('last_name', 'Name')
+#     }
+#     users = db.find(find_by_name)
+
+#     for user in users:
+#         print(user)
+#     return json.loads(bson.json_util.dumps(user))
 
 @app.route("/user")
 def get_user():
-    find_by_name = { 
-        "first_name": session.get('first_name', 'Fake'), 
+    find_by_name = {
+        "first_name": session.get('first_name', 'Fake'),
         "last_name": session.get('last_name', 'Name')
     }
     users = db.find(find_by_name)
 
-    for user in users:
-        print(user)
-    return json.loads(bson.json_util.dumps(user))
+    user = None
+    for u in users:
+        user = u
+        break
+
+    if user:
+        return json.loads(bson.json_util.dumps(user))
+    else:
+        return jsonify({"error": "User not found"})
 
 # def load_models():
 #     """"
-#     Take the pickled model file, and open and load it into a variable called "model" 
+#     Take the pickled model file, and open and load it into a variable called "model"
 #     Return: "model", an object of our model
 #     """
 #     file_name = "examples/strava-oauth/model_file.p"
 #     with open(file_name, 'rb') as pickled:
 #         data = pickle.load(pickled)
 #         model = data['model']
-#     return model  
+#     return model
 
 
 @app.route("/predict", methods=["POST"])
-def predict():    
+def predict():
     # Retrieve the access token from the session cookie
     access_token = session.get('access_token')
     if access_token is None:
@@ -134,8 +152,8 @@ def predict():
     client.access_token = access_token
 
     response = {}
-    
-    types = ['time', 'latlng', 'distance', 'altitude', 'velocity_smooth', 
+
+    types = ['time', 'latlng', 'distance', 'altitude', 'velocity_smooth',
     'heartrate', 'cadence', 'watts', 'temp', 'moving', 'grade_smooth']
 
     # Get all activity
@@ -143,7 +161,7 @@ def predict():
     # To get activities in oldest to newest, specify a value for the after argument. To get newest to oldest use before argument.
     activity_response_array = []
     heartrate_response_array = []
-    
+
     one_week_ago = datetime.now(timezone.utc) - timedelta(days=7)
     one_week_ago = str(one_week_ago.strftime('%Y-%m-%dT%H:%M:%SZ'))
     total_hour, total_min, total_sec, weekly_training_time = 0, 0, 0, 0
@@ -155,7 +173,7 @@ def predict():
         total_min += int(min)
         total_sec += int(sec)
         weekly_training_time = round(total_hour + (total_min / 60) + (total_sec / 3600))
-        
+
         # Activities can have many streams, you can request n desired stream types
         stream = client.get_activity_streams(activity.id, types=types, resolution='high')
 
@@ -167,7 +185,7 @@ def predict():
                 total_bmp += bpm
                 count += 1
             heartrate_response_array.append(round(total_bmp/count))
-    
+
     response['heartrate_response'] = heartrate_response_array[-1] if heartrate_response_array else 0
     response['activity_response'] = activity_response_array
     response['weekly_training_time_response'] = weekly_training_time
@@ -182,20 +200,20 @@ def predict():
     response['recovery_score'] = 23 # Dump the result to be sent back to the frontend
     response['recommendation_txt'] = "Do better"
 
-    find_by_name = { 
-        "first_name": session.get('first_name', 'Fake'), 
+    find_by_name = {
+        "first_name": session.get('first_name', 'Fake'),
         "last_name": session.get('last_name', 'Name')
     }
-    
-    user = db.find_one(find_by_name)    
+
+    user = db.find_one(find_by_name)
     if user is None:
         # Return error if document does not exist
         return 'Document with specified first and last name does not exist', 400
-    
+
     # Add new heart rate value to the existing heart rate array
     new_heart_rate = response['heartrate_response']
     db.update_one({'_id': user['_id']}, {'$push': {'heart_rate': new_heart_rate}})
-    
+
     # Add new weekly training value to the existing weekly training array
     new_weekly_training = response['weekly_training_time_response']
     db.update_one({'_id': user['_id']}, {'$push': {'weekly_training': new_weekly_training}})
@@ -207,7 +225,7 @@ def predict():
     # Add new recommendation object to the existing recommendation list
     new_recommendation = {'date': datetime.now(), 'recommendation_txt': response['recommendation_txt']}
     db.update_one({'_id': user['_id']}, {'$push': {'recommendation': new_recommendation}})
-    
+
     response = json.dumps(response)
     return json.dumps(response)
 

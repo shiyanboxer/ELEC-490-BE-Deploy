@@ -12,7 +12,14 @@ def connect_db():
         # Make a Connection with MongoClient. Create a MongoClient to the running mongod instance.
         # https://stackoverflow.com/questions/54484890/ssl-handshake-issue-with-pymongo-on-python3
         # CONNECTION_STRING = 'mongodb+srv://elec49x:' + MONGO_PASSWORD + '@cluster0.eqv2bql.mongodb.net/test'
+        # connectTimeoutMS=30000, socketTimeoutMS=None, socketKeepAlive=True, connect=False, maxPoolsize=1
         CONNECTION_STRING = 'mongodb+srv://elec49x:elec49x@cluster0.eqv2bql.mongodb.net/test'
+        client = pymongo.MongoClient(CONNECTION_STRING,
+                             connectTimeoutMS=30000,
+                             socketTimeoutMS=None,
+                             connect=False,
+                             maxPoolsize=1)
+        
         client = pymongo.MongoClient(CONNECTION_STRING, tlsAllowInvalidCertificates=True)
         # Get collection
         db = client['users']
