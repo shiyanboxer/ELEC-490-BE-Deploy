@@ -23,7 +23,7 @@ from dotenv import load_dotenv
 from stravalib import Client
 # Run FE and BE servers at once
 from flask_cors import CORS
-# import bson.json_util
+import bson.json_util
 import connection as connection
 
 app = Flask(__name__)
@@ -121,8 +121,7 @@ def get_user():
 
     for user in users:
         print(user)
-    # return json.loads(bson.json_util.dumps(user))
-    return
+    return json.loads(bson.json_util.dumps(user))
 
 # def load_models():
 #     """"
