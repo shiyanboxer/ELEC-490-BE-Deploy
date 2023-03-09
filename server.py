@@ -95,21 +95,17 @@ def logged_in():
             expires_at = refresh_response['expires_at']
 
         # return render_template('login_results.html', athlete=strava_athlete, access_token=access_token)
-        # dashboard = 'http://localhost:3000/dashboard/app'
-        dashboard = 'https://elec49x.netlify.app/dashboard/app'
+        dashboard = 'http://localhost:3000/dashboard/app'
+        # dashboard = 'https://elec49x.netlify.app/dashboard/app'
         return redirect(dashboard)
 
-# @app.route("/user")
-# def get_user():
-#     find_by_name = {
-#         "first_name": session.get('first_name', 'Fake'),
-#         "last_name": session.get('last_name', 'Name')
-#     }
-#     users = db.find(find_by_name)
-
-#     for user in users:
-#         print(user)
-#     return json.loads(bson.json_util.dumps(user))
+@app.route("/onboarding", methods=["POST"])
+def onboarding():
+    # Save onboaridng answer to the cache
+    print(json.loads(request.data))
+    # session['onboaridng_answers'] = json.loads(request.data)
+    print(session)
+    return jsonify({})
 
 @app.route("/user")
 def get_user():
