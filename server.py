@@ -176,7 +176,9 @@ def predict():
         # Result is a dictionary object.  The dict's key are the stream type.
         total_bmp = 0
         count = 0
-        if 'heartrate' in stream.keys():
+        if not stream: 
+            continue
+        elif 'heartrate' in stream.keys():
             for bpm in stream['heartrate'].data:
                 total_bmp += bpm
                 count += 1
@@ -193,7 +195,7 @@ def predict():
 
     # x_test = np.array([hrv]) # Create a X_test variable of the user's input
     # recovery_score = model.predict(x_test.reshape(1, -1)) # Use the the  X_test to to predict the success using the  predict()
-    response['recovery_score'] = 23 # Dump the result to be sent back to the frontend
+    response['recovery_score'] = 66 # Dump the result to be sent back to the frontend
     response['recommendation_txt'] = "Do better"
 
     find_by_name = {
@@ -226,4 +228,4 @@ def predict():
     return json.dumps(response)
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5001)
